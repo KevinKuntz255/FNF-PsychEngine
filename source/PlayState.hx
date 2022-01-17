@@ -305,7 +305,11 @@ class PlayState extends MusicBeatState
 		instakillOnMiss = ClientPrefs.getGameplaySetting('instakill', false);
 		practiceMode = ClientPrefs.getGameplaySetting('practice', false);
 		cpuControlled = ClientPrefs.getGameplaySetting('botplay', false);
-
+		
+		if (ClientPrefs.skipCountdown) {
+		skipCountdown = true;
+		}
+		
 		
 		
 		shader_chromatic_abberation = new ChromaticAberrationEffect();

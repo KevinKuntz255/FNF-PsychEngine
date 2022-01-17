@@ -62,6 +62,13 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'bool',
 			true);
 		addOption(option);
+		
+		var option:Option = new Option('Skip Countdown',
+			"If checked, Skips the Countdown",
+			'skipCountdown',
+			'bool',
+			false);
+		addOption(option);
 
 		var option:Option = new Option('Disable Reset Button',
 			"If checked, pressing Reset won't do anything.",
