@@ -4348,7 +4348,7 @@ class PlayState extends MusicBeatState
 		} else if(dad.danceIdle && dad.animation.curAnim.name != null && !dad.curCharacter.startsWith('gf') && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned) {
 			dad.dance();
 		}
-
+		
 		switch (curStage)
 		{
 			case 'school':
