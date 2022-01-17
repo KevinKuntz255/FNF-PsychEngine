@@ -3240,18 +3240,16 @@ class PlayState extends MusicBeatState
 		trace('SWITCHING SONG');
 		
 		PlayState.storyPlaylist = [newsong];
-		switch(newdifficulty) {
-		
-		case 'Hard' | 'hard' | '2':
-		PlayState.storyDifficulty = 2;
-		
-		case 'Normal' | 'normal' | '1':
-		PlayState.storyDifficulty = 1;
-		
-		case 'Easy' | 'easy' | '0':
-		PlayState.storyDifficulty = 0;
-		
-		}
+		switch(newdifficulty.toLowerCase()) 
+        {
+        case 'hard' | '2':
+        PlayState.storyDifficulty = 2;
+        case 'normal' | '1':
+        PlayState.storyDifficulty = 1;
+        case 'easy' | '0':
+        PlayState.storyDifficulty = 0;
+        }
+		var difficulty:String = CoolUtil.getDifficultyFilePath();
 		
 		new FlxTimer().start(0.01, function(tmr:FlxTimer)
 		{
@@ -3267,7 +3265,7 @@ class PlayState extends MusicBeatState
 		prevCamFollowPos = camFollowPos;
 		
 		FlxG.sound.music.stop();
-		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase(), PlayState.storyPlaylist[0].toLowerCase());
+		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + difficulty, PlayState.storyPlaylist[0].toLowerCase());
 		
 		isStoryMode = false;
 	}
