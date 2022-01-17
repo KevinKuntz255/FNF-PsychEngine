@@ -1623,7 +1623,7 @@ class PlayState extends MusicBeatState
 
 			if (skipCountdown){
 				Conductor.songPosition = 0;
-				Conductor.songPosition -= Conductor.crochet ;
+				Conductor.songPosition -= Conductor.crochet;
 				swagCounter = 3;
 			}
 			startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
