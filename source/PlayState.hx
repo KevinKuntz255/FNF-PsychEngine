@@ -1759,7 +1759,9 @@ class PlayState extends MusicBeatState
 	var previousFrameTime:Int = 0;
 	var lastReportedPlayheadPosition:Int = 0;
 	var songTime:Float = 0;
-
+	
+	
+	
 	function startSong():Void
 	{
 		startingSong = false;
@@ -2654,8 +2656,7 @@ class PlayState extends MusicBeatState
 				boyfriend.dance();
 			}
 		}
-		
-		#if debug
+
 		if(!endingSong && !startingSong) {
 			if (FlxG.keys.justPressed.ONE) {
 				KillNotes();
@@ -2697,7 +2698,6 @@ class PlayState extends MusicBeatState
 				vocals.play();
 			}
 		}
-		#end
 
 		setOnLuas('cameraX', camFollowPos.x);
 		setOnLuas('cameraY', camFollowPos.y);
@@ -3222,29 +3222,59 @@ class PlayState extends MusicBeatState
 			});
 		}
 	}
+	
+	public function switchSong(newsong:String, newdifficulty:String)
+	{
+		timeBarBG.visible = false;
+		timeBar.visible = false;
+		timeTxt.visible = false;
+		canPause = false;
+		endingSong = true;
+		camZooming = false;
+		inCutscene = false;
+		updateTime = false;
 
+		deathCounter = 0;
+		seenCutscene = false;
+
+		trace('SWITCHING SONG');
+		
+		PlayState.storyPlaylist = [newsong];
+		switch(newdifficulty) {
+		
+		case 'Hard' | 'hard' | '2':
+		PlayState.storyDifficulty = 2;
+		
+		case 'Normal' | 'normal' | '1':
+		PlayState.storyDifficulty = 1;
+		
+		case 'Easy' | 'easy' | '0':
+		PlayState.storyDifficulty = 0;
+		
+		}
+		
+		new FlxTimer().start(0.01, function(tmr:FlxTimer)
+		{
+		LoadingState.loadAndSwitchState(new PlayState());
+		FlxG.sound.music.volume = 0;
+		FreeplayState.destroyFreeplayVocals();
+		});
+
+		FlxTransitionableState.skipNextTransIn = true;
+		FlxTransitionableState.skipNextTransOut = true;
+
+		prevCamFollow = camFollow;
+		prevCamFollowPos = camFollowPos;
+		
+		FlxG.sound.music.stop();
+		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase(), PlayState.storyPlaylist[0].toLowerCase());
+		
+		isStoryMode = false;
+	}
 
 	public var transitioning = false;
 	public function endSong():Void
-	{
-		//Should kill you if you tried to cheat
-		if(!startingSong) {
-			notes.forEach(function(daNote:Note) {
-				if(daNote.strumTime < songLength - Conductor.safeZoneOffset) {
-					health -= 0.05 * healthLoss;
-				}
-			});
-			for (daNote in unspawnNotes) {
-				if(daNote.strumTime < songLength - Conductor.safeZoneOffset) {
-					health -= 0.05 * healthLoss;
-				}
-			}
-
-			if(doDeathCheck()) {
-				return;
-			}
-		}
-		
+	{	
 		timeBarBG.visible = false;
 		timeBar.visible = false;
 		timeTxt.visible = false;

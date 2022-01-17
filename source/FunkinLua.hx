@@ -741,6 +741,13 @@ class FunkinLua {
 			PlayState.instance.triggerEventNote(name, value1, value2);
 			//trace('Triggered event: ' + name + ', ' + value1 + ', ' + value2);
 		});
+		
+		Lua_helper.add_callback(lua, "switchSong", function(newsong:Dynamic, newdifficulty:Dynamic) {
+            var value1:String = cast newsong;
+            var value2:String = cast newdifficulty;
+            PlayState.instance.switchSong(value1, value2);
+            //trace('Triggered event: ' + name + ', ' + value1 + ', ' + value2);
+        });
 
 		Lua_helper.add_callback(lua, "startCountdown", function(variable:String) {
 			PlayState.instance.startCountdown();
