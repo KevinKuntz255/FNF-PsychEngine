@@ -2024,7 +2024,11 @@ class PlayState extends MusicBeatState
 			{
 				babyArrow.y -= 10;
 				babyArrow.alpha = 0;
+				if (!skipCountdown) {
 				FlxTween.tween(babyArrow, {y: babyArrow.y + 10, alpha: targetAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
+				} else {
+				FlxTween.tween(babyArrow, {y: babyArrow.y + 10, alpha: targetAlpha}, 0.3, {ease: FlxEase.circOut, startDelay: 0.1 + (0.2 * i)});
+				}
 			}
 			else
 			{
