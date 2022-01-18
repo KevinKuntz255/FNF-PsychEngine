@@ -246,6 +246,8 @@ class PlayState extends MusicBeatState
 
 	public var inCutscene:Bool = false;
 	public var skipCountdown:Bool = false;
+	public var noCombo:Bool = false;
+	public var noNum:Bool = false;
 	var songLength:Float = 0;
 
 	#if desktop
@@ -1621,14 +1623,16 @@ class PlayState extends MusicBeatState
 
 			var swagCounter:Int = 0;
 
-			if (skipCountdown){
+			if (skipCountdown)
+			{
 				Conductor.songPosition = 0;
 				Conductor.songPosition -= Conductor.crochet;
 				swagCounter = 3;
 			}
+			
 			startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
 			{
-				if (tmr.loopsLeft % gfSpeed == 0 && !gf.stunned && gf.animation.curAnim.name != null && !gf.animation.curAnim.name.startsWith("sing"))
+				if (tmr.loopsLeft % gfSpeed == 0 && !gf.stunned && gf.animation.curAnim.name != null && !gf.animation.curAnim.name.startsWith("sing") && !skipCountdown)
 				{
 					gf.dance();
 				}
@@ -3395,7 +3399,7 @@ class PlayState extends MusicBeatState
 		unspawnNotes = [];
 		eventNotes = [];
 	}
-
+	
 	public var totalPlayed:Int = 0;
 	public var totalNotesHit:Float = 0.0;
 	private function popUpScore(note:Note = null):Void
@@ -3487,7 +3491,11 @@ class PlayState extends MusicBeatState
 		rating.acceleration.y = 550;
 		rating.velocity.y -= FlxG.random.int(140, 175);
 		rating.velocity.x -= FlxG.random.int(0, 10);
+		if (!noCombo) {
 		rating.visible = !ClientPrefs.hideHud;
+		} else {
+		rating.visible = false;
+		}
 		rating.x += ClientPrefs.comboOffset[0];
 		rating.y -= ClientPrefs.comboOffset[1];
 
@@ -3557,7 +3565,11 @@ class PlayState extends MusicBeatState
 			numScore.acceleration.y = FlxG.random.int(200, 300);
 			numScore.velocity.y -= FlxG.random.int(140, 160);
 			numScore.velocity.x = FlxG.random.float(-5, 5);
+			if (!noNum) {
 			numScore.visible = !ClientPrefs.hideHud;
+			} else {
+			numScore.visible = false;
+			}
 
 			if (combo >= 10 || combo == 0)
 				insert(members.indexOf(strumLineNotes), numScore);
@@ -3595,7 +3607,7 @@ class PlayState extends MusicBeatState
 			startDelay: Conductor.crochet * 0.001
 		});
 	}
-
+	
 	private function onKeyPress(event:KeyboardEvent):Void
 	{
 		var eventKey:FlxKey = event.keyCode;
