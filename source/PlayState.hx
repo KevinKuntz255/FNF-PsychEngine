@@ -247,6 +247,8 @@ class PlayState extends MusicBeatState
 
 	public var inCutscene:Bool = false;
 	public var skipCountdown:Bool = false;
+	public var noCombo:Bool = false;
+	public var noNum:Bool = false;
 	var songLength:Float = 0;
 
 	#if desktop
@@ -306,6 +308,8 @@ class PlayState extends MusicBeatState
 		instakillOnMiss = ClientPrefs.getGameplaySetting('instakill', false);
 		practiceMode = ClientPrefs.getGameplaySetting('practice', false);
 		cpuControlled = ClientPrefs.getGameplaySetting('botplay', false);
+		
+		if (ClientPrefs.skipCountdown) skipCountdown = true;
 
 		shader_chromatic_abberation = new ChromaticAberrationEffect();
 
@@ -1616,12 +1620,12 @@ class PlayState extends MusicBeatState
 
 			if (skipCountdown){
 				Conductor.songPosition = 0;
-				Conductor.songPosition -= Conductor.crochet ;
+				Conductor.songPosition -= Conductor.crochet;
 				swagCounter = 3;
 			}
 			startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
 			{
-				if (tmr.loopsLeft % gfSpeed == 0 && !gf.stunned && gf.animation.curAnim.name != null && !gf.animation.curAnim.name.startsWith("sing"))
+				if (tmr.loopsLeft % gfSpeed == 0 && !gf.stunned && gf.animation.curAnim.name != null && !gf.animation.curAnim.name.startsWith("sing") && !skipCountdown)
 				{
 					gf.dance();
 				}
@@ -3456,7 +3460,11 @@ class PlayState extends MusicBeatState
 		rating.acceleration.y = 550;
 		rating.velocity.y -= FlxG.random.int(140, 175);
 		rating.velocity.x -= FlxG.random.int(0, 10);
+		if (!noCombo) {
 		rating.visible = !ClientPrefs.hideHud;
+		} else {
+		rating.visible = false;
+		}
 		rating.x += ClientPrefs.comboOffset[0];
 		rating.y -= ClientPrefs.comboOffset[1];
 
@@ -3526,7 +3534,11 @@ class PlayState extends MusicBeatState
 			numScore.acceleration.y = FlxG.random.int(200, 300);
 			numScore.velocity.y -= FlxG.random.int(140, 160);
 			numScore.velocity.x = FlxG.random.float(-5, 5);
+			if (!noNum) {
 			numScore.visible = !ClientPrefs.hideHud;
+			} else {
+			numScore.visible = false;
+			}
 
 			//if (combo >= 10 || combo == 0)
 				insert(members.indexOf(strumLineNotes), numScore);
