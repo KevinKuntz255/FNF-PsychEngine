@@ -2777,7 +2777,6 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		#if debug
 		if(!endingSong && !startingSong) {
 			if (FlxG.keys.justPressed.ONE) {
 				KillNotes();
@@ -2841,7 +2840,6 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
-		#end
 
 		setOnLuas('cameraX', camFollowPos.x);
 		setOnLuas('cameraY', camFollowPos.y);
