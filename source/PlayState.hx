@@ -2763,6 +2763,7 @@ class PlayState extends MusicBeatState
 						noteMiss(daNote);
 					}
 					daNote.visible = false;
+					daNote.canBeHit = false;
 					unspawnNotes.push(daNote);
 				}
 			});
