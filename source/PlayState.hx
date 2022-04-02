@@ -1937,6 +1937,173 @@ class PlayState extends MusicBeatState
 		checkEventNote();
 		generatedMusic = true;
 	}
+	
+	private function reGenerateSong(dataPath:String):Void
+	{
+		generatedMusic = false;
+		// FlxG.log.add(ChartParser.parse());
+		songSpeedType = ClientPrefs.getGameplaySetting('scrolltype','multiplicative');
+
+		switch(songSpeedType)
+		{
+			case "multiplicative":
+				songSpeed = SONG.speed * ClientPrefs.getGameplaySetting('scrollspeed', 1);
+			case "constant":
+				songSpeed = ClientPrefs.getGameplaySetting('scrollspeed', 1);
+		}
+		
+		var songData = SONG;
+		Conductor.changeBPM(songData.bpm);
+		
+		curSong = songData.song;
+
+		unspawnNotes = [];
+		notes.clear();
+		eventNotes = [];
+
+		//eventPushedMap.clear();
+		eventPushedMap = null;
+		eventPushedMap = new Map<String, Bool>();
+
+		//noteTypeMap.clear();
+		noteTypeMap = null;
+		noteTypeMap = new Map<String, Bool>();
+
+		var noteData:Array<SwagSection>;
+
+		// NEW SHIT
+		noteData = songData.notes;
+
+		var songName:String = Paths.formatToSongPath(SONG.song);
+		var file:String = Paths.json(songName + '/events');
+		#if sys
+		if (FileSystem.exists(Paths.modsJson(songName + '/events')) || FileSystem.exists(file)) {
+		#else
+		if (OpenFlAssets.exists(file)) {
+		#end
+			var eventsData:Array<Dynamic> = Song.loadFromJson('events', songName).events;
+			for (event in eventsData) //Event Notes
+			{
+				for (i in 0...event[1].length)
+				{
+					var newEventNote:Array<Dynamic> = [event[0], event[1][i][0], event[1][i][1], event[1][i][2]];
+					var subEvent:EventNote = {
+						strumTime: newEventNote[0] + ClientPrefs.noteOffset,
+						event: newEventNote[1],
+						value1: newEventNote[2],
+						value2: newEventNote[3]
+					};
+					subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
+					eventNotes.push(subEvent);
+					eventPushed(subEvent);
+				}
+			}
+		}
+
+		for (section in noteData)
+		{
+			for (songNotes in section.sectionNotes)
+			{
+				var daStrumTime:Float = songNotes[0];
+				var daNoteData:Int = Std.int(songNotes[1] % 4);
+
+				var gottaHitNote:Bool = section.mustHitSection;
+
+				if (songNotes[1] > 3)
+				{
+					gottaHitNote = !section.mustHitSection;
+				}
+
+				var oldNote:Note;
+				if (unspawnNotes.length > 0)
+					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+				else
+					oldNote = null;
+
+				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote);
+				swagNote.mustPress = gottaHitNote;
+				swagNote.sustainLength = songNotes[2];
+				swagNote.gfNote = (section.gfSection && (songNotes[1]<4));
+				swagNote.noteType = songNotes[3];
+				if(!Std.isOfType(songNotes[3], String)) swagNote.noteType = editors.ChartingState.noteTypeList[songNotes[3]]; //Backward compatibility + compatibility with Week 7 charts
+				
+				swagNote.scrollFactor.set();
+
+				var susLength:Float = swagNote.sustainLength;
+
+				susLength = susLength / Conductor.stepCrochet;
+				unspawnNotes.push(swagNote);
+
+				var floorSus:Int = Math.floor(susLength);
+				if(floorSus > 0) {
+					for (susNote in 0...floorSus+1)
+					{
+						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+
+						var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + (Conductor.stepCrochet / FlxMath.roundDecimal(songSpeed, 2)), daNoteData, oldNote, true);
+						sustainNote.mustPress = gottaHitNote;
+						sustainNote.gfNote = (section.gfSection && (songNotes[1]<4));
+						sustainNote.noteType = swagNote.noteType;
+						sustainNote.scrollFactor.set();
+						unspawnNotes.push(sustainNote);
+
+						if (sustainNote.mustPress)
+						{
+							sustainNote.x += FlxG.width / 2; // general offset
+						}
+						else if(ClientPrefs.middleScroll)
+						{
+							sustainNote.x += 310;
+							if(daNoteData > 1) //Up and Right
+							{
+								sustainNote.x += FlxG.width / 2 + 25;
+							}
+						}
+					}
+				}
+
+				if (swagNote.mustPress)
+				{
+					swagNote.x += FlxG.width / 2; // general offset
+				}
+				else if(ClientPrefs.middleScroll)
+				{
+					swagNote.x += 310;
+					if(daNoteData > 1) //Up and Right
+					{
+						swagNote.x += FlxG.width / 2 + 25;
+					}
+				}
+
+				if(!noteTypeMap.exists(swagNote.noteType)) {
+					noteTypeMap.set(swagNote.noteType, true);
+				}
+			}
+		}
+		for (event in songData.events) //Event Notes
+		{
+			for (i in 0...event[1].length)
+			{
+				var newEventNote:Array<Dynamic> = [event[0], event[1][i][0], event[1][i][1], event[1][i][2]];
+				var subEvent:EventNote = {
+					strumTime: newEventNote[0] + ClientPrefs.noteOffset,
+					event: newEventNote[1],
+					value1: newEventNote[2],
+					value2: newEventNote[3]
+				};
+				subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
+				eventNotes.push(subEvent);
+				eventPushed(subEvent);
+			}
+		}
+
+		unspawnNotes.sort(sortByShit);
+		if(eventNotes.length > 1) { //No need to sort if there's a single one or none at all
+			eventNotes.sort(sortByTime);
+		}
+		checkEventNote();
+		generatedMusic = true;
+	}
 
 	function eventPushed(event:EventNote) {
 		switch(event.event) {

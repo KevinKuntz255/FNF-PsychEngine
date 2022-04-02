@@ -780,22 +780,6 @@ class FunkinLua {
 			//trace('Triggered event: ' + name + ', ' + value1 + ', ' + value2);
 		});
 		
-		// code by craftersshaft, they're really cool
-		Lua_helper.add_callback(lua, "switchSong", function(jsonInput:String, folder:String, skipTransition:Bool) {
-            trace("trying to load new song " + jsonInput + " from folder " + folder);
-			if(skipTransition)
-			{
-				FlxTransitionableState.skipNextTransIn = true;
-				FlxTransitionableState.skipNextTransOut = true;
-			}
-
-			PlayState.SONG = Song.loadFromJson(jsonInput, folder);
-			FlxG.sound.music.stop();
-			PlayState.cancelMusicFadeTween();
-			LoadingState.loadAndSwitchState(new PlayState());
-		}); 
-		// code by craftersshaft, they're really cool
-		
 		Lua_helper.add_callback(lua, "startCountdown", function(variable:String) {
 			PlayState.instance.startCountdown();
 		});
