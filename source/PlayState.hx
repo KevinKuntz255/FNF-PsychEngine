@@ -103,6 +103,9 @@ class PlayState extends MusicBeatState
 	public var GF_X:Float = 400;
 	public var GF_Y:Float = 130;
 
+	public var forwardsSpeedTween:FlxTween;
+	public var backwardsSpeedTween:FlxTween;
+	public var SongPosSpeedTween:FlxTween;
 	public var songSpeedTween:FlxTween;
 	public var songSpeed(default, set):Float = 1;
 	public var songSpeedType:String = "multiplicative";
@@ -2032,7 +2035,8 @@ class PlayState extends MusicBeatState
 				var susLength:Float = swagNote.sustainLength;
 
 				susLength = susLength / Conductor.stepCrochet;
-				unspawnNotes.push(swagNote);
+				if (daStrumTime >= Conductor.songPosition) unspawnNotes.push(swagNote);
+				
 
 				var floorSus:Int = Math.floor(susLength);
 				if(floorSus > 0) {
@@ -2045,7 +2049,7 @@ class PlayState extends MusicBeatState
 						sustainNote.gfNote = (section.gfSection && (songNotes[1]<4));
 						sustainNote.noteType = swagNote.noteType;
 						sustainNote.scrollFactor.set();
-						unspawnNotes.push(sustainNote);
+						if (daStrumTime >= Conductor.songPosition) unspawnNotes.push(sustainNote);
 
 						if (sustainNote.mustPress)
 						{
@@ -2092,7 +2096,7 @@ class PlayState extends MusicBeatState
 					value2: newEventNote[3]
 				};
 				subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
-				eventNotes.push(subEvent);
+				if (subEvent.strumTime >= Conductor.songPosition) eventNotes.push(subEvent);
 				eventPushed(subEvent);
 			}
 		}
@@ -2210,7 +2214,16 @@ class PlayState extends MusicBeatState
 				finishTimer.active = false;
 			if (songSpeedTween != null)
 				songSpeedTween.active = false;
-
+			
+			if (forwardsSpeedTween != null)
+				forwardsSpeedTween.active = false;
+				
+			if (backwardsSpeedTween != null)
+				backwardsSpeedTween.active = false;
+			
+			if (SongPosSpeedTween != null)
+				SongPosSpeedTween.active = false;
+			
 			if(blammedLightsBlackTween != null)
 				blammedLightsBlackTween.active = false;
 			if(phillyCityLightsEventTween != null)
@@ -2251,6 +2264,15 @@ class PlayState extends MusicBeatState
 				finishTimer.active = true;
 			if (songSpeedTween != null)
 				songSpeedTween.active = true;
+			
+			if (forwardsSpeedTween != null)
+				forwardsSpeedTween.active = true;
+				
+			if (backwardsSpeedTween != null)
+				backwardsSpeedTween.active = true;
+			
+			if (SongPosSpeedTween != null)
+				SongPosSpeedTween.active = true;
 
 			if(blammedLightsBlackTween != null)
 				blammedLightsBlackTween.active = true;
@@ -2765,7 +2787,6 @@ class PlayState extends MusicBeatState
 		}
 		checkEventNote();
 		
-		#if debug
 		if(!endingSong && !startingSong) {
 			if (FlxG.keys.justPressed.ONE) {
 				KillNotes();
@@ -2775,8 +2796,11 @@ class PlayState extends MusicBeatState
 				setSongTime(Conductor.songPosition + 10000);
 				clearNotesBefore(Conductor.songPosition);
 			}
+			if(FlxG.keys.justPressed.THREE) { //Go 10 seconds into the past :O
+				setSongTime(Conductor.songPosition - 10000);
+				reGenerateSong(SONG.song);
+			}
 		}
-		#end
 
 		setOnLuas('cameraX', camFollowPos.x);
 		setOnLuas('cameraY', camFollowPos.y);
@@ -3209,6 +3233,34 @@ class PlayState extends MusicBeatState
 						}
 					});
 				}
+			
+			case 'Forward Time': // using the Change Scroll Speed event as Template
+				var val1:Float = Std.parseFloat(value1);
+				var val2:Float = Std.parseFloat(value2);
+				if(Math.isNaN(val1)) val1 = Conductor.songPosition / 1000;
+				if(Math.isNaN(val2)) val2 = 0;
+				
+				setSongTime(Conductor.songPosition + val1 * 1000);
+				reGenerateSong(SONG.song);
+				
+			case 'Reverse Time': // using the Change Scroll Speed event as Template
+				var val1:Float = Std.parseFloat(value1);
+				var val2:Float = Std.parseFloat(value2);
+				if(Math.isNaN(val1)) val1 = Conductor.songPosition / 1000;
+				if(Math.isNaN(val2)) val2 = 0;
+				
+				setSongTime(Conductor.songPosition - val1 * 1000);
+				reGenerateSong(SONG.song);
+			
+			case 'Set Time':
+				var val1:Float = Std.parseFloat(value1);
+				var val2:Float = Std.parseFloat(value2);
+				if(Math.isNaN(val1)) val1 = Conductor.songPosition;
+				if(Math.isNaN(val2)) val2 = 0;
+
+				setSongTime(val1 * 1000);
+				reGenerateSong(SONG.song);
+				
 		}
 		callOnLuas('onEvent', [eventName, value1, value2]);
 	}
@@ -4390,7 +4442,7 @@ class PlayState extends MusicBeatState
 	{
 		super.beatHit();
 
-		if(lastBeatHit >= curBeat) {
+		if(lastBeatHit == curBeat) {
 			//trace('BEAT HIT: ' + curBeat + ', LAST HIT: ' + lastBeatHit);
 			return;
 		}
