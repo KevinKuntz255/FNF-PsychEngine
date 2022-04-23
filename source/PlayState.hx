@@ -103,10 +103,10 @@ class PlayState extends MusicBeatState
 	public var GF_X:Float = 400;
 	public var GF_Y:Float = 130;
 
+	public var songSpeedTween:FlxTween;
 	public var forwardsSpeedTween:FlxTween;
 	public var backwardsSpeedTween:FlxTween;
-	public var SongPosSpeedTween:FlxTween;
-	public var songSpeedTween:FlxTween;
+	public var songPosSpeedTween:FlxTween;
 	public var songSpeed(default, set):Float = 1;
 	public var songSpeedType:String = "multiplicative";
 	public var noteKillOffset:Float = 350;
@@ -1996,7 +1996,7 @@ class PlayState extends MusicBeatState
 						value1: newEventNote[2],
 						value2: newEventNote[3]
 					};
-					subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
+					if (subEvent.strumTime >= Conductor.songPosition) subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
 					eventNotes.push(subEvent);
 					eventPushed(subEvent);
 				}
@@ -2221,8 +2221,8 @@ class PlayState extends MusicBeatState
 			if (backwardsSpeedTween != null)
 				backwardsSpeedTween.active = false;
 			
-			if (SongPosSpeedTween != null)
-				SongPosSpeedTween.active = false;
+			if (songPosSpeedTween != null)
+				songPosSpeedTween.active = false;
 			
 			if(blammedLightsBlackTween != null)
 				blammedLightsBlackTween.active = false;
@@ -2271,8 +2271,8 @@ class PlayState extends MusicBeatState
 			if (backwardsSpeedTween != null)
 				backwardsSpeedTween.active = true;
 			
-			if (SongPosSpeedTween != null)
-				SongPosSpeedTween.active = true;
+			if (songPosSpeedTween != null)
+				songPosSpeedTween.active = true;
 
 			if(blammedLightsBlackTween != null)
 				blammedLightsBlackTween.active = true;
@@ -2616,7 +2616,11 @@ class PlayState extends MusicBeatState
 					if(secondsTotal < 0) secondsTotal = 0;
 
 					if(ClientPrefs.timeBarType != 'Song Name')
-						timeTxt.text = FlxStringUtil.formatTime(secondsTotal, false);
+						if (forwardsSpeedTween == null && backwardsSpeedTween == null && songPosSpeedTween == null) {
+							timeTxt.text = FlxStringUtil.formatTime(secondsTotal, false);
+						} else {
+							timeTxt.text = FlxStringUtil.formatTime(secondsTotal, false);
+						}
 				}
 			}
 
@@ -2883,7 +2887,11 @@ class PlayState extends MusicBeatState
 		//trace('Control result: ' + pressed);
 		return pressed;
 	}
-
+	
+	public var reversed = 1;
+	public var skipped = 1;
+	public var timed = 1;
+	
 	public function triggerEventNote(eventName:String, value1:String, value2:String) {
 		switch(eventName) {
 			case 'Hey!':
@@ -3234,16 +3242,50 @@ class PlayState extends MusicBeatState
 					});
 				}
 			
-			case 'Forward Time': // using the Change Scroll Speed event as Template
+			case 'Skip Time':
 				var val1:Float = Std.parseFloat(value1);
 				var val2:Float = Std.parseFloat(value2);
 				if(Math.isNaN(val1)) val1 = Conductor.songPosition / 1000;
 				if(Math.isNaN(val2)) val2 = 0;
 				
-				setSongTime(Conductor.songPosition + val1 * 1000);
-				reGenerateSong(SONG.song);
+				var newValue:Float = Conductor.songPosition + val1 * 1000;
 				
-			case 'Reverse Time': // using the Change Scroll Speed event as Template
+				if(val2 <= 0)
+				{
+					setSongTime(Conductor.songPosition + val1 * 1000);
+				}
+				else
+				{
+					forwardsSpeedTween = null;
+					FlxG.sound.music.volume = 0;
+					vocals.volume = 0;
+					notes.forEachAlive(function(daNote:Note)
+					{
+						if (daNote.strumTime <= newValue) daNote.ignoreNote = true;
+					});
+					eventNotes = [];
+					forwardsSpeedTween = FlxTween.tween(Conductor, {songPosition: newValue}, val2, {ease: FlxEase.linear, onComplete: 
+						function (twn:FlxTween) 
+						{
+							forwardsSpeedTween = null;
+							setSongTime(Conductor.songPosition + val1 * 1000);
+							FlxG.sound.music.volume = 1;
+						}
+					});
+				}
+				
+				
+				/*
+				var forwardsTimer:FlxTimer = new FlxTimer().start(0, function (tmr:FlxTimer) {
+					while(eventNotes.length > 0) {
+						if (eventNotes[0].event == 'Skip Time') eventNotes.shift();
+						break;
+					}
+				}skipped);
+				*/
+				skipped += 1;
+				
+			case 'Reverse Time':
 				var val1:Float = Std.parseFloat(value1);
 				var val2:Float = Std.parseFloat(value2);
 				if(Math.isNaN(val1)) val1 = Conductor.songPosition / 1000;
@@ -3251,6 +3293,14 @@ class PlayState extends MusicBeatState
 				
 				setSongTime(Conductor.songPosition - val1 * 1000);
 				reGenerateSong(SONG.song);
+				
+				var backwardsTimer:FlxTimer = new FlxTimer().start(0.01, function (tmr:FlxTimer) {
+					while(eventNotes.length > 0) {
+						if (eventNotes[0].event == 'Reverse Time') eventNotes.shift();
+						break;
+					}
+				},reversed);
+				reversed += 1;
 			
 			case 'Set Time':
 				var val1:Float = Std.parseFloat(value1);
@@ -3260,6 +3310,14 @@ class PlayState extends MusicBeatState
 
 				setSongTime(val1 * 1000);
 				reGenerateSong(SONG.song);
+				
+				var setTimer:FlxTimer = new FlxTimer().start(0, function (tmr:FlxTimer) {
+					while(eventNotes.length > 0) {
+						if (eventNotes[0].event == 'Set Time') eventNotes.shift();
+						break;
+					}
+				},timed);
+				timed += 1;
 				
 		}
 		callOnLuas('onEvent', [eventName, value1, value2]);
