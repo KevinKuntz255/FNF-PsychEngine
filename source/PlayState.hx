@@ -2888,10 +2888,6 @@ class PlayState extends MusicBeatState
 		return pressed;
 	}
 	
-	public var reversed = 1;
-	public var skipped = 1;
-	public var timed = 1;
-	
 	public function triggerEventNote(eventName:String, value1:String, value2:String) {
 		switch(eventName) {
 			case 'Hey!':
@@ -3250,40 +3246,7 @@ class PlayState extends MusicBeatState
 				
 				var newValue:Float = Conductor.songPosition + val1 * 1000;
 				
-				if(val2 <= 0)
-				{
-					setSongTime(Conductor.songPosition + val1 * 1000);
-				}
-				else
-				{
-					forwardsSpeedTween = null;
-					FlxG.sound.music.volume = 0;
-					vocals.volume = 0;
-					notes.forEachAlive(function(daNote:Note)
-					{
-						if (daNote.strumTime <= newValue) daNote.ignoreNote = true;
-					});
-					eventNotes = [];
-					forwardsSpeedTween = FlxTween.tween(Conductor, {songPosition: newValue}, val2, {ease: FlxEase.linear, onComplete: 
-						function (twn:FlxTween) 
-						{
-							forwardsSpeedTween = null;
-							setSongTime(Conductor.songPosition + val1 * 1000);
-							FlxG.sound.music.volume = 1;
-						}
-					});
-				}
-				
-				
-				/*
-				var forwardsTimer:FlxTimer = new FlxTimer().start(0, function (tmr:FlxTimer) {
-					while(eventNotes.length > 0) {
-						if (eventNotes[0].event == 'Skip Time') eventNotes.shift();
-						break;
-					}
-				}skipped);
-				*/
-				skipped += 1;
+				setSongTime(Conductor.songPosition + val1 * 1000);
 				
 			case 'Reverse Time':
 				var val1:Float = Std.parseFloat(value1);
@@ -3293,14 +3256,6 @@ class PlayState extends MusicBeatState
 				
 				setSongTime(Conductor.songPosition - val1 * 1000);
 				reGenerateSong(SONG.song);
-				
-				var backwardsTimer:FlxTimer = new FlxTimer().start(0.01, function (tmr:FlxTimer) {
-					while(eventNotes.length > 0) {
-						if (eventNotes[0].event == 'Reverse Time') eventNotes.shift();
-						break;
-					}
-				},reversed);
-				reversed += 1;
 			
 			case 'Set Time':
 				var val1:Float = Std.parseFloat(value1);
@@ -3310,14 +3265,6 @@ class PlayState extends MusicBeatState
 
 				setSongTime(val1 * 1000);
 				reGenerateSong(SONG.song);
-				
-				var setTimer:FlxTimer = new FlxTimer().start(0, function (tmr:FlxTimer) {
-					while(eventNotes.length > 0) {
-						if (eventNotes[0].event == 'Set Time') eventNotes.shift();
-						break;
-					}
-				},timed);
-				timed += 1;
 				
 		}
 		callOnLuas('onEvent', [eventName, value1, value2]);
