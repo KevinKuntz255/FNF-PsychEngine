@@ -343,6 +343,8 @@ class Character extends FlxSprite
 
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0, altSheet:Bool = false):Void
 	{
+		// CHUNK FROM CREATE
+		var characterPath:String = 'characters/' + curCharacter + '.json';
 		
 		#if MODS_ALLOWED
 		var path:String = Paths.modFolders(characterPath);
@@ -357,8 +359,9 @@ class Character extends FlxSprite
 		#end
 		
 		var json:CharacterFile = cast Json.parse(rawJson);
+		// END OF CHUNK
 		
-		if (altSheet) frames = Paths.getSparrowAtlas(json.imageAlt);
+		if (altSheet) frames = Paths.getSparrowAtlas(json.imageAlt); // ALL THAT CHUNK FO THIS?!?!?
 		
 		specialAnim = false;
 		animation.play(AnimName, Force, Reversed, Frame);
