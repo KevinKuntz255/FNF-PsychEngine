@@ -343,8 +343,15 @@ class Character extends FlxSprite
 
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0, altSheet:Bool = false):Void
 	{
+		#if MODS_ALLOWED
+		var rawJson = File.getContent(path);
+		#else
+		var rawJson = Assets.getText(path);
+		#end
 		var json:CharacterFile = cast Json.parse(rawJson);
+		
 		if (altSheet) frames = Paths.getSparrowAtlas(json.imageAlt);
+		
 		specialAnim = false;
 		animation.play(AnimName, Force, Reversed, Frame);
 

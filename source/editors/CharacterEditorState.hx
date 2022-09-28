@@ -676,6 +676,7 @@ class CharacterEditorState extends MusicBeatState
 				name: animationNameInputText.text,
 				fps: Math.round(animationNameFramerate.value),
 				loop: animationLoopCheckBox.checked,
+				altSheet: animationLoopCheckBox.checked,
 				indices: indices,
 				offsets: lastOffsets
 			};
