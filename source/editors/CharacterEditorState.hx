@@ -613,7 +613,7 @@ class CharacterEditorState extends MusicBeatState
 	var animationNameInputText:FlxUIInputText;
 	var animationIndicesInputText:FlxUIInputText;
 	var animationNameFramerate:FlxUINumericStepper;
-	var animationAltCheckBox:FlxUINumericStepper;
+	var animationAltCheckBox:FlxUICheckBox;
 	var animationLoopCheckBox:FlxUICheckBox;
 	function addAnimationsUI() {
 		var tab_group = new FlxUI(null, UI_box);
