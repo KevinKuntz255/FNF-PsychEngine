@@ -518,6 +518,7 @@ class CharacterEditorState extends MusicBeatState
 		var reloadImage:FlxButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Reload Image", function()
 		{
 			char.imageFile = imageInputText.text;
+			char.imageFileAlt = imageAltInputText.text;
 			reloadCharacterImage();
 			if(char.animation.curAnim != null) {
 				char.playAnim(char.animation.curAnim.name, true);
@@ -536,6 +537,7 @@ class CharacterEditorState extends MusicBeatState
 			});
 
 		healthIconInputText = new FlxUIInputText(15, imageInputText.y + 35, 75, leHealthIcon.getCharacter(), 8);
+		imageAltInputText = new FlxUIInputText(healthIconInputText.x + 80, healthIconInputText.y + 35, 75, 'characters/alt', 8);
 
 		singDurationStepper = new FlxUINumericStepper(15, healthIconInputText.y + 45, 0.1, 4, 0, 999, 1);
 
@@ -586,6 +588,7 @@ class CharacterEditorState extends MusicBeatState
 		tab_group.add(new FlxText(positionCameraXStepper.x, positionCameraXStepper.y - 18, 0, 'Camera X/Y:'));
 		tab_group.add(new FlxText(healthColorStepperR.x, healthColorStepperR.y - 18, 0, 'Health bar R/G/B:'));
 		tab_group.add(imageInputText);
+		tab_group.add(imageAltInputText);
 		tab_group.add(reloadImage);
 		tab_group.add(decideIconColor);
 		tab_group.add(healthIconInputText);
@@ -773,6 +776,9 @@ class CharacterEditorState extends MusicBeatState
 			else if(sender == imageInputText) {
 				char.imageFile = imageInputText.text;
 			}
+			else if(sender == imageAltInputText) {
+				char.imageFileAlt = imageAltInputText.text;
+			}
 		} else if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
 			if (sender == scaleStepper)
 			{
@@ -846,7 +852,16 @@ class CharacterEditorState extends MusicBeatState
 		} else {
 			char.frames = Paths.getSparrowAtlas(char.imageFile);
 		}
-
+		
+		if (char.altSheet) {
+			if(Paths.fileExists('images/' + char.imageFileAlt + '/Animation.json', TEXT)) {
+				char.frames = AtlasFrameMaker.construct(char.imageFileAlt);
+			} else if(Paths.fileExists('images/' + char.imageFileAlt + '.txt', TEXT)) {
+				char.frames = Paths.getPackerAtlas(char.imageFileAlt);
+			} else {
+				char.frames = Paths.getSparrowAtlas(char.imageFileAlt);
+			}
+		}
 
 
 
