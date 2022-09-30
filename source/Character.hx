@@ -342,27 +342,10 @@ class Character extends FlxSprite
 		}
 	}
 
-	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0, altSheet:Bool = false):Void
+	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0, alternateSheet:Bool = false):Void
 	{
-		// CHUNK FROM CREATE
-		var characterPath:String = 'characters/' + curCharacter + '.json';
-		
-		#if MODS_ALLOWED
-		var path:String = Paths.modFolders(characterPath);
-		#else
-		var path:String = Paths.getPreloadPath(characterPath);
-		#end
-		
-		#if MODS_ALLOWED
-		var rawJson = File.getContent(path);
-		#else
-		var rawJson = Assets.getText(path);
-		#end
-		
-		var json:CharacterFile = cast Json.parse(rawJson);
-		// END OF CHUNK
-		
-		if (altSheet) frames = Paths.getSparrowAtlas(json.imageAlt); // ALL THAT CHUNK FO THIS?!?!?
+		altSheet = alternateSheet;
+		if (altSheet) frames = Paths.getSparrowAtlas(imageFileAlt); // ALL THAT CHUNK FO THIS?!?!?
 		
 		specialAnim = false;
 		animation.play(AnimName, Force, Reversed, Frame);

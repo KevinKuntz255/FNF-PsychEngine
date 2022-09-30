@@ -537,7 +537,7 @@ class CharacterEditorState extends MusicBeatState
 			});
 
 		healthIconInputText = new FlxUIInputText(15, imageInputText.y + 35, 75, leHealthIcon.getCharacter(), 8);
-		imageAltInputText = new FlxUIInputText(healthIconInputText.x + 80, healthIconInputText.y + 35, 75, 'characters/alt', 8);
+		imageAltInputText = new FlxUIInputText(healthIconInputText.x + 110, healthIconInputText.y, 75, 'characters/alt', 8);
 
 		singDurationStepper = new FlxUINumericStepper(15, healthIconInputText.y + 45, 0.1, 4, 0, 999, 1);
 
@@ -581,7 +581,7 @@ class CharacterEditorState extends MusicBeatState
 
 		tab_group.add(new FlxText(15, imageInputText.y - 18, 0, 'Image file name:'));
 		tab_group.add(new FlxText(15, healthIconInputText.y - 18, 0, 'Health icon name:'));
-		tab_group.add(new FlxText(15, healthIconInputText.y - 18, 0, 'Alt file name:'));
+		tab_group.add(new FlxText(imageAltInputText.x, healthIconInputText.y - 18, 0, 'Alt file name:'));
 		tab_group.add(new FlxText(15, singDurationStepper.y - 18, 0, 'Sing Animation length:'));
 		tab_group.add(new FlxText(15, scaleStepper.y - 18, 0, 'Scale:'));
 		tab_group.add(new FlxText(positionXStepper.x, positionXStepper.y - 18, 0, 'Character X/Y:'));
@@ -624,7 +624,11 @@ class CharacterEditorState extends MusicBeatState
 		animationIndicesInputText = new FlxUIInputText(animationNameInputText.x, animationNameInputText.y + 40, 250, '', 8);
 		animationNameFramerate = new FlxUINumericStepper(animationInputText.x + 170, animationInputText.y, 1, 24, 0, 240, 0);
 		animationLoopCheckBox = new FlxUICheckBox(animationNameInputText.x + 170, animationNameInputText.y - 1, null, null, "Should it Loop?", 100);
-		animationAltCheckBox = new FlxUICheckBox(animationNameFramerate.x + 170, animationNameFramerate.y, null, null, "Alt Sheet", 100);
+		animationAltCheckBox = new FlxUICheckBox(animationNameFramerate.x + 70, animationNameFramerate.y, null, null, "Alt Sheet", 100);
+		animationAltCheckBox.callback = function() {
+			char.altSheet = animationAltCheckBox.checked;
+			if (char.altSheet) char.frames = Paths.getSparrowAtlas(char.imageFileAlt);
+		};
 
 		animationDropDown = new FlxUIDropDownMenuCustom(15, animationInputText.y - 55, FlxUIDropDownMenuCustom.makeStrIdLabelArray([''], true), function(pressed:String) {
 			var selectedAnimation:Int = Std.parseInt(pressed);
@@ -1003,6 +1007,7 @@ class CharacterEditorState extends MusicBeatState
 	function reloadCharacterOptions() {
 		if(UI_characterbox != null) {
 			imageInputText.text = char.imageFile;
+			imageAltInputText.text = char.imageFileAlt;
 			healthIconInputText.text = char.healthIcon;
 			singDurationStepper.value = char.singDuration;
 			scaleStepper.value = char.jsonScale;
@@ -1121,7 +1126,7 @@ class CharacterEditorState extends MusicBeatState
 			textAnim.text = '';
 		}
 
-		var inputTexts:Array<FlxUIInputText> = [animationInputText, imageInputText, healthIconInputText, animationNameInputText, animationIndicesInputText];
+		var inputTexts:Array<FlxUIInputText> = [animationInputText, imageInputText, imageAltInputText, healthIconInputText, animationNameInputText, animationIndicesInputText];
 		for (i in 0...inputTexts.length) {
 			if(inputTexts[i].hasFocus) {
 				FlxG.sound.muteKeys = [];
@@ -1297,6 +1302,7 @@ class CharacterEditorState extends MusicBeatState
 		var json = {
 			"animations": char.animationsArray,
 			"image": char.imageFile,
+			"imageAlt": char.imageFileAlt,
 			"scale": char.jsonScale,
 			"sing_duration": char.singDuration,
 			"healthicon": char.healthIcon,
