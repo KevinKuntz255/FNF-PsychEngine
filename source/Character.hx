@@ -23,7 +23,6 @@ using StringTools;
 typedef CharacterFile = {
 	var animations:Array<AnimArray>;
 	var image:String;
-	var imageAlt:String;
 	var scale:Float;
 	var sing_duration:Float;
 	var healthicon:String;
@@ -41,7 +40,6 @@ typedef AnimArray = {
 	var name:String;
 	var fps:Int;
 	var loop:Bool;
-	var altSheet:Bool;
 	var indices:Array<Int>;
 	var offsets:Array<Int>;
 }
@@ -60,7 +58,6 @@ class Character extends FlxSprite
 	public var specialAnim:Bool = false;
 	public var animationNotes:Array<Dynamic> = [];
 	public var stunned:Bool = false;
-	public var altSheet:Bool = false;
 	public var singDuration:Float = 4; //Multiplier of how long a character holds the sing pose
 	public var idleSuffix:String = '';
 	public var danceIdle:Bool = false; //Character use "danceLeft" and "danceRight" instead of "idle"
@@ -76,7 +73,6 @@ class Character extends FlxSprite
 
 	//Used on Character Editor
 	public var imageFile:String = '';
-	public var imageFileAlt:String = '';
 	public var jsonScale:Float = 1;
 	public var noAntialiasing:Bool = false;
 	public var originalFlipX:Bool = false;
@@ -171,7 +167,6 @@ class Character extends FlxSprite
 						frames = AtlasFrameMaker.construct(json.image);
 				}
 				imageFile = json.image;
-				if (json.imageAlt != null) imageFileAlt = json.imageAlt;
 
 				if(json.scale != 1) {
 					jsonScale = json.scale;
@@ -342,11 +337,8 @@ class Character extends FlxSprite
 		}
 	}
 
-	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0, alternateSheet:Bool = false):Void
+	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
 	{
-		altSheet = alternateSheet;
-		if (altSheet) frames = Paths.getSparrowAtlas(imageFileAlt); // ALL THAT CHUNK FO THIS?!?!?
-		
 		specialAnim = false;
 		animation.play(AnimName, Force, Reversed, Frame);
 
